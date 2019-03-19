@@ -1,0 +1,15 @@
+<br><br>
+  Title   : {{display[1]}} <br>
+  Author  : {{display[2]}}  <br>
+  Edition : {{display[3]}} <br>
+  Rating  : {{display[6]}} <br>
+  Branch  : {{display[7]}} <br><br>
+  Description : {{display[10]}} <br><br><br><br>
+  {%for b in seller %}
+  seller : {{b[0]}}<br>
+  price  : {{b[1]}}&nbsp
+  <form action="requestBook" method="post">
+    <button name="req" type="submit" value="{{b[2]}}">Buy Book</button>
+  </form>
+
+  {% endfor %}
