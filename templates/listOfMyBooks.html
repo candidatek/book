@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    {%for i in booksList%}
+    {{i[1]}} <br>
+    {{i[2]}} <br>
+    <form class="" action="edit" method="post">
+      <button type="submit" name="edit" value ="{{i[0]}}"">Edit </button> <br>
+      <button type="submit" name="delete" value ="{{i[0]}}"">Delete</button> <br><br>
+    </form>
+
+
+    {%endfor%}
+  </body>
+</html>

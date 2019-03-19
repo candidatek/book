@@ -1,0 +1,45 @@
+<form action="sell">
+  <input type="submit" name="sell" value="SELL BOOK">
+</form>
+<a href="asd">List of Books</a>
+<br><br>
+<table border="1">
+
+
+
+  <th>Title</th>
+  <th>Author</th>
+  <th>Price</th>
+  <th>Branch</th>
+  <th>Rating</th>
+  <th>Sem</th>
+
+
+
+  {%for b in userDetails %}
+
+  <tr>
+      <td>
+        <form action="bookDetails" method="post">
+        <input type="submit" name="book" value="{{b[1]}}">
+        </form>
+      </td>
+      <td>
+        {{b[2]}}
+      </td>
+      <td>
+        {{b[3]}}
+      </td>
+      <td>
+        {{b[5]}}
+      </td>
+      <td>
+        {{b[6]}}
+      </td>
+      <td>
+        {{b[8]}}
+      </td>
+
+  </tr>
+  {% endfor %}
+</table>

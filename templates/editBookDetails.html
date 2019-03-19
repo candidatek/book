@@ -1,0 +1,64 @@
+<head>
+  <script type="text/javascript">
+    var count = 1 ;
+
+    function stringJoin(){
+      var str = "" ;
+      str = document.getElementById("dept1").value ;
+      console.log(str);
+
+    }
+
+  function addSelect(divname) {
+     var newDiv=document.createElement('div');
+
+     console.log(count.toString());
+     var html = '<br>Branch  '+count+': <select id = "dept"'+count+' name="dept">' +
+      '<option value="SE">SELECT </option>' +
+      '<option value="AS">Aero Space</option>' +
+      '<option value="BT">Bio Technology</option>' +
+      '<option value="CE">Chemical Engineering</option>'+
+      '<option value="CS">Computer Science</option>'+
+      '<option value="CV">Civil</option>'+
+      '<option value="ME">Mechanical</option>'+
+      '<option value="IS">Information Science</option>'+
+      '<option value="EC">Electonics and Communication</option>'+
+      '<option value="EE">Electrical and Electonics</option>'+
+      '<option value="MCA">Master in Computer Application</option>'+
+      '<option value="TE">Telecommunicaton Engineering</option>';
+     newDiv.innerHTML= html;
+     count++;
+     document.getElementById(divname).appendChild(newDiv);
+
+  }
+  </script>
+
+</head>
+
+
+
+<form class="" action="edit" method="post">
+  Title:   <input type="text" name="title" value="{{b[1]}}"><br><br>
+  <input type="hidden" name="bookid" value="{{b[0]}}">
+  Author : <input type="text" name="author" value="{{b[2]}}"><br><br>
+  Edition  : <input type="number" name="edition" value="{{b[3]}}"> <br><br>
+  Price   : <input type="number" name="price" value="{{b[4]}}"> <br><br>
+  Rating  : <input type="number" name="rating" value="{{b[6]}}"> <br><br>
+  sem     : <input type="number" name="sem" value="{{b[10]}}"> <br><br>
+  Branch  : <select id = "dept0" name="dept">
+  <option value="SE">SELECT </option>
+  <option value="AS">Aero Space</option>
+  <option value="BT">Bio Technology</option>
+  <option value="CE">Chemical Engineering</option>
+  <option value="CS">Computer Science</option>
+  <option value="CV">Civil</option>
+  <option value="ME">Mechanical</option>
+  <option value="IS">Information Science</option>
+  <option value="EC">Electonics and Communication</option>
+  <option value="EE">Electrical and Electonics</option>
+  <option value="MCA">Master in Computer Application</option>
+  <option value="TE">Telecommunicaton Engineering</option>
+</select><br> <br>
+<button id="updateData" type="submit" name="updateData" > Done </button>
+</form>
+<br>
