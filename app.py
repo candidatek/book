@@ -2,6 +2,7 @@ from __future__ import print_function # In python 2.7
 from flask import Flask, redirect, url_for, session, request, jsonify ,render_template
 from flask_oauthlib.client import OAuth
 from flask_mysqldb import MySQL
+from base64 import b64encode
 import json
 import datetime
 import smtplib
@@ -128,18 +129,20 @@ def dashboard():
     #print(display)
     return render_template('dashboard.html' )
 
+
 @app.route('/profile')
 def profile():
     email = session['email']
     cur = mysql.connection.cursor()
     cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
     branch = cur.fetchone();
-    print("Dashboard")
     session['dept'] = branch[0]
     cur.execute("SELECT * FROM users WHERE email = %s " , [email] )
     display = cur.fetchall()
     #print(display)
-    return render_template('profile.html' , dis = display)
+    jsondata = jsonify(display)
+    #return jsondata
+    return render_template('profile.html' , dis = display )
 
 @app.route('/profile/edit' , methods=['GET' , 'POST'])
 def editDetails():
@@ -171,19 +174,47 @@ def editDetails():
             except:
                 deleteId = editDetails['delete']
                 cur.execute("DELETE FROM books WHERE book_id = %s " , [deleteId])
-                #mysql.connection.commit()    
+                #mysql.connection.commit()
                 return deleteId
 
+@app.route('/profile/purchased')
+def pruchased():
+
+        email = session['email']
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM sold , books  WHERE sold.buyer = %s AND sold.status = 'sold' AND books.status = 'sold'",[email])
+        booksList = cur.fetchall()
+        print(booksList)
+        return render_template('addreview.html' , booksList = booksList)
+
+
+@app.route('/profile/purchased/addreview' ,methods = ['GET' , 'POST'])
+def addreview():
+    if request.method == 'POST' :
+        reviewForm = request.form
+        bookid = reviewForm['addpublicreview']
+        bookreview= reviewForm['publicreview']
+        email = session['email']
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT title , author FROM books WHERE book_id = %s ", [bookid])
+        bookDetails = cur.fetchone()
+        title = bookDetails[0]
+        author = bookDetails[1]
+        cur.execute("INSERT INTO reviews (title , author , reviewby  , comments) VALUES (%s ,%s , %s , %s )  " , [title , author  ,email , bookreview])
+        mysql.connection.commit()
+        print(bookid)
+        print(bookreview)
+        return render_template('addreview.html')
+    return  "NOT POST"
 
 
 
-
-@app.route('/profile/upload')
-def upload():
+@app.route('/profile/uploaded')
+def uploaded():
     try:
         email = session['email']
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM books WHERE uploader = %s ",[email])
+        cur.execute("SELECT * FROM books WHERE uploader = %s AND status = 'available'",[email])
         booksList = cur.fetchall()
         return render_template('listOfMyBooks.html' , booksList = booksList)
 
@@ -192,23 +223,55 @@ def upload():
     #email = session['email']
     #cur = mysql.connection.cursor()
 
+@app.route('/profile/pending')
+def pending():
+    try:
+        cur = mysql.connection.cursor()
+        email = session['email']
+        #cur.execute("SELECT * FROM books WHERE status = 'booked' AND uploader = %s " , [email])
+        #notifications = cur.fetchall()
+        #cur.execute("SELECT buyer FROM sold WHERE status = 'booked' AND seller = %s " , [email])
+        #buyerInfo = cur.execute()
+        cur.execute("SELECT  * FROM books INNER JOIN sold ON books.uploader=sold.seller WHERE books.status = 'booked' AND books.book_id = sold.book_id AND books.uploader = %s ",[email])
+        notifiy = cur.fetchall()
+        return render_template('notifiy.html' ,  notifiy =notifiy )
+    except :
+            return redirect(url_for('logout'))
+
+@app.route('/profile/sold')
+def sold():
+    #try:
+        email = session['email']
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM sold WHERE seller  = %s AND status = 'sold'",[email])
+        booksList = cur.fetchall()
+        return render_template('listOfMyBooks.html' , booksList = booksList)
+
+@app.route('/profile/requested')
+def reqquested():
+    #try:
+        email = session['email']
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM sold WHERE buyer = %s AND status = 'booked'",[email])
+        booksList = cur.fetchall()
+        return render_template('listOfMyBooks.html' , booksList = booksList)
+    #except :
+    #    return redirect(url_for('logout'))
 
 @app.route('/bookDetails', methods=['GET' , 'POST'])
 def owner():
-    print('Book Details  \n')
-    if request.method  == 'POST' :
-        ownerForm = request.form
-        bookname = ownerForm['book']
-        print(bookname)
+        print('Book Details  \n')
+        bookname = request.args.get('book')
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM books WHERE title = %s ", [bookname])
         bookDetails = cur.fetchone()
         cur.execute("SELECT uploader , price , book_id FROM books WHERE title = %s AND status = 'available' ORDER BY price ASC" , [bookname])
         bookSellers = cur.fetchall()
-        return render_template('bookSellers.html' , display = bookDetails , seller = bookSellers)
-    else :
-        return 'NOT POST'
-    return '\nBook Details'
+        image = bookDetails[12]
+        cur.execute("SELECT * FROM reviews WHERE title = %s ", [bookname])
+        reviews = cur.fetchall()
+        return render_template('bookSellers.html' , display = bookDetails , seller = bookSellers , reviews = reviews )
+    #return '\nBook Details'
 
 
 @app.route('/requestBook' , methods=['GET' , 'POST'])
@@ -227,64 +290,69 @@ def requestBook():
             return 'SORRY THIS BOOK HAS BEEN BOOKED BUY SOME ONE ELSE'
         else:
             #all details of the user who requested the book
-            reqEmail = session['email']
-            cur.execute("SELECT * FROM users WHERE email = %s " , [reqEmail])
-            dbObject = cur.fetchone()
-            reqName  = dbObject[2]
-            reqPhone = dbObject[5]
-
-            #book Details
-            cur.execute("SELECT * FROM books WHERE book_id = %s " ,[req])
-            dbObject = cur.fetchone()
-            bookTitle = dbObject[1]
-            bookAuthor = dbObject[2]
-            bookEdition = dbObject[3]
-            ownerEmail = dbObject[5]
-            price = dbObject[4]
-            #owner Details
-            cur.execute("SELECT * FROM users WHERE email = %s " ,[ownerEmail])
-            dbObject = cur.fetchone()
-            ownerName = dbObject[2]
-            ownerPhone = dbObject[5]
-
-            cur.execute("SELECT * FROM users WHERE email = %s " ,[ownerEmail])
-            dbObject = cur.fetchone()
-            ownerName = dbObject[2]
-            ownerPhone = dbObject[5]
-
-
-            now = datetime.datetime.now()
-            year = (now.year)
-            month = (now.month)
-            day = (now.day)
-            tdate = f"{year}-{month}-{day}"
-            print(tdate)
-
-
             try:
-                cur.execute("UPDATE books SET status = 'booked' WHERE book_id = %s " , [req] )
-                cur.execute("INSERT INTO `sold` (`book_id`, `buyer`, `seller`, `status`, `date`) VALUES (%s, %s, %s, 'booked', %s)",(req,reqEmail,ownerEmail , tdate))
-                mysql.connection.commit()
+                reqEmail = session['email']
+                cur.execute("SELECT * FROM users WHERE email = %s " , [reqEmail])
+                dbObject = cur.fetchone()
+                reqName  = dbObject[2]
+                reqPhone = dbObject[5]
+                server = smtplib.SMTP('smtp.gmail.com:587')
+                server.ehlo()
+                server.starttls()
+                server.login(config.EMAIL , config.PASS)
+
+                #book Details
+                cur.execute("SELECT * FROM books WHERE book_id = %s " ,[req])
+                dbObject = cur.fetchone()
+                bookTitle = dbObject[1]
+                bookAuthor = dbObject[2]
+                bookEdition = dbObject[3]
+                ownerEmail = dbObject[5]
+                price = dbObject[4]
+                #owner Details
+                cur.execute("SELECT * FROM users WHERE email = %s " ,[ownerEmail])
+                dbObject = cur.fetchone()
+                ownerName = dbObject[2]
+                ownerPhone = dbObject[5]
+
+                cur.execute("SELECT * FROM users WHERE email = %s " ,[ownerEmail])
+                dbObject = cur.fetchone()
+                ownerName = dbObject[2]
+                ownerPhone = dbObject[5]
+
+
+                now = datetime.datetime.now()
+                year = (now.year)
+                month = (now.month)
+                day = (now.day)
+                tdate = f"{year}-{month}-{day}"
+                print(tdate)
                 try:
-                    server = smtplib.SMTP('smtp.gmail.com:587')
-                    server.ehlo()
-                    server.starttls()
-                    server.login(config.EMAIL , config.PASS)
-                    subject = "Notification For Book Request"
-                    msg = f"Hello ! The user with email id : {reqEmail} has requested you the book Titled = {bookTitle}\nAuthor = {bookAuthor}\nEdition = {bookEdition} \npriced :{price} \nThe Student Details are \nName = {reqName}\nPhone = {reqPhone} "
-                    message = 'Subject:{}\n\n{}'.format(subject , msg)
-                    server.sendmail(config.EMAIL , ownerEmail , message)
-                    msg = f"Hello ! Your request has been sent to the owner of the book \nTitled = {bookTitle}\nAuthor = {bookAuthor}\nEdition = {bookEdition} \npriced :{price} \nThe Details of book owner are \nName = {ownerName}\nPhone = {ownerPhone} \nEmail = {ownerEmail}"
-                    subject = "Conformation For Your Book Request"
-                    message = 'Subject:{}\n\n{}'.format(subject , msg)
-                    server.sendmail(config.EMAIL , reqEmail , message)
-                    print("sent")
-                    server.quit()
+                    cur.execute("UPDATE books SET status = 'booked' WHERE book_id = %s " , [req] )
+                    cur.execute("INSERT INTO `sold` (`book_id`, `buyer`, `seller`, `status`, `date`) VALUES (%s, %s, %s, 'booked', %s)",(req,reqEmail,ownerEmail , tdate))
+                    mysql.connection.commit()
+                    try:
+                        #server = smtplib.SMTP('smtp.gmail.com:587')
+                        #server.ehlo()
+                        #server.starttls()
+                        #server.login(config.EMAIL , config.PASS)
+                        subject = "Notification For Book Request"
+                        msg = f"Hello ! The user with email id : {reqEmail} has requested you the book Titled = {bookTitle}\nAuthor = {bookAuthor}\nEdition = {bookEdition} \npriced :{price} \nThe Student Details are \nName = {reqName}\nPhone = {reqPhone} "
+                        message = 'Subject:{}\n\n{}'.format(subject , msg)
+                        server.sendmail(config.EMAIL , ownerEmail , message)
+                        msg = f"Hello ! Your request has been sent to the owner of the book \nTitled = {bookTitle}\nAuthor = {bookAuthor}\nEdition = {bookEdition} \npriced :{price} \nThe Details of book owner are \nName = {ownerName}\nPhone = {ownerPhone} \nEmail = {ownerEmail}"
+                        subject = "Conformation For Your Book Request"
+                        message = 'Subject:{}\n\n{}'.format(subject , msg)
+                        server.sendmail(config.EMAIL , reqEmail , message)
+                        print("sent")
+                        server.quit()
+                    except:
+                        return 'email not sent !'
+                    return 'Email notification has been sent to the user'
                 except:
-                    return 'email not sent !'
-                return 'Email notification has been sent to the user'
+                    return 'Failed'
             except:
-                return 'Failed'
+                return 'Login first'
             #print(cur.fetchone())
     return ' hmmmm Your request has been sent to the seller :)'
 
@@ -314,8 +382,17 @@ def notify():
     #cur.execute("SELECT buyer FROM sold WHERE status = 'booked' AND seller = %s " , [email])
     #buyerInfo = cur.execute()
     cur.execute("SELECT  * FROM books INNER JOIN sold ON books.uploader=sold.seller WHERE books.status = 'booked' AND books.book_id = sold.book_id AND books.uploader = %s ",[email])
-    notif = cur.fetchall()
-    return render_template('notifiy.html' ,  notif = notif )#, buyerInfo = buyerInfo)
+    notifiy = cur.fetchall()
+
+    emailList = list(notifiy)
+    nameList = []
+    for i in notifiy:
+        cur.execute("SELECT full_name FROM users WHERE email = %s " , [i[13]])
+        nameList.append(cur.fetchone())
+    for i in range(len(nameList)):
+        print(emailList[i][13])
+        print(nameList[i])
+    return render_template('notifiy.html' ,  notifiy = tuple(emailList) , nm = nameList  )#, buyerInfo = buyerInfo)
 
 
 @app.route('/asd')
@@ -360,24 +437,25 @@ def closeDeal():
 
 @app.route('/sell',methods=['GET' , 'POST'])
 def sell():
-        """if request.method == 'POST' :
+        if request.method == 'POST' :
             userDetais = request.form
             title  = userDetais['title']
             author = userDetais['author']
             price = userDetais['price']
-            uploader = userDetais['owner']
+            uploader = session['email']
             rating = userDetais['rating']
             branch = userDetais['dept']
             sem = userDetais['sem']
+            photo = userDetais['pic']
             #return title + sem + branch
             #email = userDetais['email']
             if title == "" or author == "" or price == "" or uploader == "" or branch == "" or sem == "" :
                 return 'Please Enter All the values'
             cur  = mysql.connection.cursor()
-            cur.execute("INSERT INTO books(title , author , price , uploader , rating , branch , sem) VALUES(%s , %s , %s , %s , %s , %s , %s )" , (title , author , price , uploader , rating , branch , sem ))
+            cur.execute("INSERT INTO books(title , author , price , uploader , rating , branch , sem ,status ,photo ) VALUES(%s , %s , %s , %s , %s , %s ,%s  ,'available' , %s)" , (title , author , price , uploader , rating , branch , sem ,photo ))
             mysql.connection.commit()
-            cur.close()"""
-            #return 'done'
+            cur.close()
+            return 'done'
         return render_template('sell.html')
 
 @google.tokengetter
