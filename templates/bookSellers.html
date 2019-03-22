@@ -1,15 +1,42 @@
-<br><br>
-  Title   : {{display[1]}} <br>
-  Author  : {{display[2]}}  <br>
-  Edition : {{display[3]}} <br>
-  Rating  : {{display[6]}} <br>
-  Branch  : {{display[7]}} <br><br>
-  Description : {{display[10]}} <br><br><br><br>
-  {%for b in seller %}
-  seller : {{b[0]}}<br>
-  price  : {{b[1]}}&nbsp
-  <form action="requestBook" method="post">
-    <button name="req" type="submit" value="{{b[2]}}">Buy Book</button>
-  </form>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
 
-  {% endfor %}
+<script type="text/javascript" >
+   function preventBack(){window.history.forward();}
+    setTimeout("preventBack()", 0);
+    window.onunload=function(){null};
+</script>
+
+  </head>
+  <body>
+
+    <br><br>
+      Title   : {{display[1]}} <br>
+      Author  : {{display[2]}}  <br>
+      Edition : {{display[3]}} <br>
+      Rating  : {{display[6]}} <br>
+      Branch  : {{display[7]}} <br><br>
+      Description : {{display[10]}} <br><br><br><br>
+      {%for b in seller %}
+      seller : {{b[0]}}<br>
+      price  : {{b[1]}}&nbsp
+      <form action="requestBook" method="post">
+        <button name="req" type="submit" value="{{b[2]}}">Buy Book</button>
+      </form>
+
+      {% endfor %}
+<br><br><br> <h2>
+  Reviews By the Buyers
+</h2>
+ {%for r in reviews %}
+ buyer : {{r[2]}} <br>
+ Comments : {{r[3]}} <br>
+ ----------------------- <br>
+
+ {%endfor%}
+
+  </body>
+</html>
