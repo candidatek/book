@@ -9,7 +9,10 @@ import smtplib
 import sys
 import config
 import yaml
+import os
 
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 db = yaml.load(open('db.yaml'))
@@ -446,15 +449,40 @@ def sell():
             rating = userDetais['rating']
             branch = userDetais['dept']
             sem = userDetais['sem']
-            photo = userDetais['pic']
+            #photo = userDetais['pic']
             #return title + sem + branch
             #email = userDetais['email']
             if title == "" or author == "" or price == "" or uploader == "" or branch == "" or sem == "" :
                 return 'Please Enter All the values'
             cur  = mysql.connection.cursor()
-            cur.execute("INSERT INTO books(title , author , price , uploader , rating , branch , sem ,status ,photo ) VALUES(%s , %s , %s , %s , %s , %s ,%s  ,'available' , %s)" , (title , author , price , uploader , rating , branch , sem ,photo ))
+            cur.execute("INSERT INTO books(title , author , price , uploader , rating , branch , sem ,status ) VALUES(%s , %s , %s , %s , %s , %s ,%s  ,'available' )" , (title , author , price , uploader , rating , branch , sem  ))
             mysql.connection.commit()
             cur.close()
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT COUNT(*) FROM books")
+        fname = cur.fetchone()
+        folder_name = 'images'
+        target = os.path.join(APP_ROOT, 'files/{}'.format(folder_name))
+        print("target = " + target)
+        if not os.path.isdir(target):
+            os.mkdir(target)
+            print(request.files.getlist("image"))
+        for upload in request.files.getlist("image"):
+            print(upload)
+            print("{} is the file name".format(upload.filename))
+            filename = upload.filename
+            print(filename)
+            # This is to verify files are supported
+            ext = os.path.splitext(filename)[1]
+            filename = str(fname[0]) + ext
+            if (ext == ".jpg") or (ext == ".png"):
+                print("File supported moving on...")
+            else:
+                render_template("Error.html", message="Files uploaded are not supported...")
+            destination = "/".join([target, filename])
+            print("Accept incoming file:", filename)
+            print("Save it to:", destination)
+            upload.save(destination)
             return 'done'
         return render_template('sell.html')
 
