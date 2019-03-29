@@ -1,3 +1,65 @@
-<form class="" action="google" >
-  <input type="submit" name="GOOGLE LOGIN" value="GOOGLE LOGIN">
-</form>
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript">
+    function degsin(){
+    var f = document.createElement("form");
+    f.setAttribute('name' , 'searchform');
+    f.setAttribute('method',"get");
+    f.setAttribute('action',"rest");
+
+    var i = document.createElement("input"); //input element, text
+    i.setAttribute('type',"text");
+    i.setAttribute('name',"search");
+    i.setAttribute('id' , 'search');
+    i.setAttribute('onkeyup' , 'callserver()');
+    f.appendChild(i);
+    var p = document.createElement("p");
+    p.setAttribute('id','demo');
+    document.getElementsByTagName('body')[0].appendChild(f);
+    document.getElementsByTagName('body')[0].appendChild(p)
+  }
+
+
+    function callserver(){
+      var key = document.getElementById("search").value ;
+      console.log(key);
+      if(key.length == 0)
+      document.getElementById("demo").innerHTML = "";
+      if(key.length < 2)
+      return;
+      var url = 'http://127.0.0.1:5000/search';
+      var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+         var js = JSON.parse(this.responseText);
+        if(js.length < 1 ){
+        document.getElementById("demo").innerHTML = "No Results Found";
+        return;
+      }
+        var print ="";
+        for(var i = 0 ; i < js.length ; i++){
+       //  js[i] = js[i].replace(',' , ' - ');
+        var res = js[i].toString();
+        res= res.replace(",", " = ");
+         print += "<br>" + res ;
+       }
+        document.getElementById("demo").innerHTML = print;
+
+      }
+    };
+    xhttp.open("GET",  url + "?search="+key  , true);
+    xhttp.send();
+    }
+    </script>
+  </head>
+     <body onload="degsin()">
+       <form class="" action="google" >
+         <input type="submit" name="GOOGLE LOGIN" value="GOOGLE LOGIN">
+       </form>
+
+  </body>
+</html>

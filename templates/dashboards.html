@@ -9,10 +9,7 @@
 
   <th>Title</th>
   <th>Author</th>
-  <th>Price</th>
-  <th>Branch</th>
-  <th>Rating</th>
-  <th>Sem</th>
+
 
 
 
@@ -21,24 +18,14 @@
   <tr>
       <td>
         <form action="bookDetails" method="get">
-        <input type="submit" name="book" value="{{b[1]}}">
+        <input type="submit" name="book" value="{{b[0]}}">
         </form>
       </td>
       <td>
-        {{b[2]}}
+        {{b[1]}}
       </td>
-      <td>
-        {{b[3]}}
-      </td>
-      <td>
-        {{b[5]}}
-      </td>
-      <td>
-        {{b[6]}}
-      </td>
-      <td>
-        {{b[8]}}
-      </td>
+
+    
 
   </tr>
   {% endfor %}

@@ -1,148 +1,70 @@
-<html>
-<head>
-  <style>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>
+    Search
+  </title>
+  <script type="text/javascript">
+  function degsin(){
+  var f = document.createElement("form");
+  f.setAttribute('name' , 'searchform');
+  f.setAttribute('method',"get");
+  f.setAttribute('action',"rest");
 
-  #myInput {
-    background-image: url('/css/searchicon.png'); /* Add a search icon to input */
-    background-position: 10px 12px; /* Position the search icon */
-    background-repeat: no-repeat; /* Do not repeat the icon image */
-    width: 100%; /* Full-width */
-    font-size: 16px; /* Increase font-size */
-    padding: 12px 20px 12px 40px; /* Add some padding */
-    border: 1px solid #ddd; /* Add a grey border */
-    margin-bottom: 12px; /* Add some space below the input */
-  }
-
-  #myTable {
-    border-collapse: collapse; /* Collapse borders */
-    width: 100%; /* Full-width */
-    border: 1px solid #ddd; /* Add a grey border */
-    font-size: 18px; /* Increase font-size */
-  }
-
-  #myTable th, #myTable td {
-    text-align: left; /* Left-align text */
-    padding: 12px; /* Add padding */
-  }
-
-  #myTable tr {
-    /* Add a bottom border to all table rows */
-    border-bottom: 1px solid #ddd;
-  }
-
-  #myTable tr.header, #myTable tr:hover {
-    /* Add a grey background color to the table header and on hover */
-    background-color: #f1f1f1;
-  }
-
-  </style>
-
-
-  <button type="button" onclick="loadDoc()">Request data</button>
-
-  <p>Click the button several times to see if the time changes, or if the file is cached.</p>
-
-  <p id="demo"></p>
-
-  <script>
-
-
-  var url = 'http://127.0.0.1:5000/rest' ;
-  function loadDoc() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange=function() {
-      if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("demo").innerHTML = this.responseText;
-      }
-    //  console.log(url);
-    ///  console.log(xhttp.responseText);
-    };
-    xhttp.open("GET", url , true);
-    xhttp.send();
-  }
-  function onChange(){
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange=function() {
-      if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("demo").innerHTML = this.responseText;
-      }
-    //  console.log(url);
-    ///  console.log(xhttp.responseText);
-    };
-    var s = document.getElementById("search") ;
-    url += "?search=" + s ;
-    xhttp.open("GET", url , true);
-xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-xhttp.setRequestHeader("Content-length", params.length);
-xhttp.setRequestHeader("search", s);
-    xhttp.send(params);
-
-    console.log(s.value);
-  }
-
-
-
-
-  function myFunction() {
-  // Declare variables
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("myTable");
-  tr = table.getElementsByTagName("tr");
-
-  // Loop through all table rows, and hide those who don't match the search query
-  for (i = 0; i < tr.length; i++) {
-    td = tr[i].getElementsByTagName("td")[0];
-    if (td) {
-      txtValue = td.textContent || td.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  }
+  var i = document.createElement("input"); //input element, text
+  i.setAttribute('type',"text");
+  i.setAttribute('name',"search");
+  i.setAttribute('id' , 'search');
+  i.setAttribute('onkeyup' , 'callserver()');
+  f.appendChild(i);
+  var p = document.createElement("p");
+  p.setAttribute('id','demo');
+  document.getElementsByTagName('body')[0].appendChild(f);
+  document.getElementsByTagName('body')[0].appendChild(p)
 }
+
+
+  function callserver(){
+    var key = document.getElementById("search").value ;
+    console.log(key);
+    if(key.length == 0)
+    document.getElementById("demo").innerHTML = "";
+    if(key.length < 2)
+    return;
+    var url = 'http://127.0.0.1:5000/rest';
+    var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+       var js = JSON.parse(this.responseText);
+      if(js.length < 1 ){
+      document.getElementById("demo").innerHTML = "No Results Found";
+      return;
+    }
+      var print ="";
+      for(var i = 0 ; i < js.length ; i++){
+     //  js[i] = js[i].replace(',' , ' - ');
+      var res = js[i].toString();
+      res= res.replace(",", " = ");
+       print += "<br>" + res ;
+     }
+      document.getElementById("demo").innerHTML = print;
+
+    }
+  };
+  xhttp.open("GET",  url + "?search="+key  , true);
+  xhttp.send();
+  }
   </script>
+  </head>
+   <body onload="degsin()">
+  <!--  <input type="text" id="search" name="search" onkeyup="callserver()" value="">
+  <form class=""  name="searchform" action="rest" method="get">
+    <input type="text" name="search" id = "search" onkeyup="callserver()" value="">
 
-
-
-</head>
-<body>
-
-  <br>
-  <br>
-<input type="text" id = "search" onkeyup="onChange()" name="" value="">
-
-<!--
-<input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names..">
- <br>
- <br>
-<table id="myTable">
- <tr class="header">
-   <th style="width:60%;">Name</th>
-   <th style="width:40%;">Country</th>
- </tr>
- <tr>
-   <td>Alfreds Futterkiste</td>
-   <td>Germany</td>
- </tr>
- <tr>
-   <td>Berglunds snabbkop</td>
-   <td>Sweden</td>
- </tr>
- <tr>
-   <td>Island Trading</td>
-   <td>UK</td>
- </tr>
- <tr>
-   <td>Koniglich Essen</td>
-   <td>Germany</td>
- </tr>
-</table>
+  </form>
+  <p id = "demo"></p>
 -->
 
-</body>
-
+  </body>
 </html>

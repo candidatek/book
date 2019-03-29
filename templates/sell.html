@@ -1,72 +1,98 @@
-<head>
-  <script type="text/javascript">
-    var count = 1 ;
 
-    function stringJoin(){
-      var str = "" ;
-      str = document.getElementById("dept1").value ;
-      console.log(str);
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <head>
+      <script>
+          $("#file-picker").change(function(){
+              var input = document.getElementById('file-picker');
+              for (var i=0; i<input.files.length; i++)
+              {
+              //koala.jpg, koala.JPG substring(index) lastIndexOf('a') koala.1.jpg
+                  var ext= input.files[i].name.substring(input.files[i].name.lastIndexOf('.')+1).toLowerCase()
+                  if ((ext == 'jpg') || (ext == 'png'))
+                  {
+                      $("#msg").text("Files are supported")
+                  }
+                  else
+                  {
+                      $("#msg").text("Files are NOT supported")
+                      document.getElementById("file-picker").value ="";
+                  }
+              }
+          } );
+      </script>
+      <script type="text/javascript">
+        var count = 1 ;
 
-    }
+        function stringJoin(){
+          var str = "" ;
+          str = document.getElementById("dept1").value ;
+          console.log(str);
 
-  function addSelect(divname) {
-     var newDiv=document.createElement('div');
+        }
 
-     console.log(count.toString());
-     var html = '<br>Branch  '+count+': <select id = "dept"'+count+' name="dept">' +
-      '<option value="SE">SELECT </option>' +
-      '<option value="AS">Aero Space</option>' +
-      '<option value="BT">Bio Technology</option>' +
-      '<option value="CE">Chemical Engineering</option>'+
-      '<option value="CS">Computer Science</option>'+
-      '<option value="CV">Civil</option>'+
-      '<option value="ME">Mechanical</option>'+
-      '<option value="IS">Information Science</option>'+
-      '<option value="EC">Electonics and Communication</option>'+
-      '<option value="EE">Electrical and Electonics</option>'+
-      '<option value="MCA">Master in Computer Application</option>'+
-      '<option value="TE">Telecommunicaton Engineering</option>';
-     newDiv.innerHTML= html;
-     count++;
-     document.getElementById(divname).appendChild(newDiv);
+      function addSelect(divname) {
+         var newDiv=document.createElement('div');
 
-  }
-  </script>
+         console.log(count.toString());
+         var html = '<br>Branch  '+count+': <select id = "dept"'+count+' name="dept">' +
+          '<option value="SE">SELECT </option>' +
+          '<option value="AS">Aero Space</option>' +
+          '<option value="BT">Bio Technology</option>' +
+          '<option value="CE">Chemical Engineering</option>'+
+          '<option value="CS">Computer Science</option>'+
+          '<option value="CV">Civil</option>'+
+          '<option value="ME">Mechanical</option>'+
+          '<option value="IS">Information Science</option>'+
+          '<option value="EC">Electonics and Communication</option>'+
+          '<option value="EE">Electrical and Electonics</option>'+
+          '<option value="MCA">Master in Computer Application</option>'+
+          '<option value="TE">Telecommunicaton Engineering</option>';
+         newDiv.innerHTML= html;
+         count++;
+         document.getElementById(divname).appendChild(newDiv);
 
-</head>
+      }
 
+      </script>
 
-
-<form class="" action="" method="post">
-  Title:   <input type="text" name="title" value=""><br><br>
-  Author : <input type="text" name="author" value=""><br><br>
-  Price   : <input type="number" name="price" value=""> <br><br>
-  Owner   : <input type="text" name="owner" value=""> <br><br>
-  Rating  : <input type="number" name="rating" value=""> <br><br>
-  sem     : <input type="number" name="sem" value=""> <br><br>
-<!--  Edition : <input type="number" name="edition" value=""> <br><br> -->
-  Photo : <input type="file" name="pic" accept="jpeg"> <br>
-  Branch  : <select id = "dept0" name="dept">
-  <option value="SE">SELECT </option>
-  <option value="AS">Aero Space</option>
-  <option value="BT">Bio Technology</option>
-  <option value="CE">Chemical Engineering</option>
-  <option value="CS">Computer Science</option>
-  <option value="CV">Civil</option>
-  <option value="ME">Mechanical</option>
-  <option value="IS">Information Science</option>
-  <option value="EC">Electonics and Communication</option>
-  <option value="EE">Electrical and Electonics</option>
-  <option value="MCA">Master in Computer Application</option>
-  <option value="TE">Telecommunicaton Engineering</option>
-</select><br> <br>
-<div id="select-container">
-</div>
+    </head>
+  <body>
 
 
 
-  <input type="submit" name="submit" onclick = "stringJoin()" value="submit" >
-</form>
-<br>
-<button id="add" onclick="addSelect('div');">Add Dropdown</button> <br><br>
-<button id="a" onclick="stringJoin();">String display</button>
+    <form class="" action="" method="post" enctype="multipart/form-data">
+      Title:   <input type="text" name="title" value="" ><br><br>
+      Author : <input type="text" name="author" value=""><br><br>
+      Price   : <input type="number" name="price" value=""> <br><br>
+      Rating  : <input type="number" name="rating" value=""> <br><br>
+      sem     : <input type="number" name="sem" value=""> <br><br>
+      Photo :   <input id="file-picker" type="file" name="image" accept="image/*" > <br><br>
+      Branch  : <select id = "dept0" name="dept">
+      <option value="SE">SELECT </option>
+      <option value="AS">Aero Space</option>
+      <option value="BT">Bio Technology</option>
+      <option value="CE">Chemical Engineering</option>
+      <option value="CS">Computer Science</option>
+      <option value="CV">Civil</option>
+      <option value="ME">Mechanical</option>
+      <option value="IS">Information Science</option>
+      <option value="EC">Electonics and Communication</option>
+      <option value="EE">Electrical and Electonics</option>
+      <option value="MCA">Master in Computer Application</option>
+      <option value="TE">Telecommunicaton Engineering</option>
+    </select><br> <br>
+    <div id="select-container">
+    </div>
+
+
+
+      <input type="submit" name="submit" onclick = "stringJoin()" value="submit" >
+    </form>
+    <br>
+    <button id="add" onclick="addSelect('div');">Add Dropdown</button> <br><br>
+    <button id="a" onclick="stringJoin();">String display</button>
+
+  </body>
+</html>
