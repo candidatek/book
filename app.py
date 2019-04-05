@@ -4,8 +4,9 @@ from flask_oauthlib.client import OAuth
 from flask_mysqldb import MySQL
 from base64 import b64encode
 import json
-import datetime
+import datetime , uuid
 import smtplib
+from flask import send_from_directory
 import sys
 import config
 import yaml
@@ -121,21 +122,31 @@ def newuser():
 
 @app.route('/dashboard')
 def dashboard():
-    email = session['email']
+    try:
+        email = session['email']
+    except:
+        return redirect(url_for('login'))
     cur = mysql.connection.cursor()
     cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
     branch = cur.fetchone();
     print("Dashboard")
     session['dept'] = branch[0]
-    cur.execute("SELECT * FROM books WHERE branch = %s " , [branch[0]] )
+    cur.execute("SELECT full_name , email ,phone  ,branch FROM users WHERE  email =  %s " , [email] )
     display = cur.fetchall()
+    cur.execute("SELECT  * FROM books INNER JOIN sold ON books.uploader=sold.seller WHERE books.status = 'booked' AND books.book_id = sold.book_id AND books.uploader = %s ",[email])
+    notifiy = cur.fetchall()
+    cur.execute("SELECT * FROM sold , books  WHERE sold.buyer = %s AND sold.status = 'sold' AND books.status = 'sold'",[email])
+    purchased  = cur.fetchall()
     #print(display)
-    return render_template('dashboard.html' )
+    return render_template('payment.html' ,dis = display , notifiy = notifiy ,purchased = purchased)
 
 
 @app.route('/profile')
 def profile():
-    email = session['email']
+    try:
+        email = session['email']
+    except:
+        return redirect(url_for('login'))
     cur = mysql.connection.cursor()
     cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
     branch = cur.fetchone();
@@ -186,9 +197,9 @@ def pruchased():
         email = session['email']
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM sold , books  WHERE sold.buyer = %s AND sold.status = 'sold' AND books.status = 'sold'",[email])
-        booksList = cur.fetchall()
+        purchased  = cur.fetchall()
         print(booksList)
-        return render_template('addreview.html' , booksList = booksList)
+        return render_template('addreview.html' , purchased = purchased)
 
 
 @app.route('/profile/purchased/addreview' ,methods = ['GET' , 'POST'])
@@ -261,21 +272,55 @@ def reqquested():
     #except :
     #    return redirect(url_for('logout'))
 
+@app.route('/addcart' , methods=['GET','POST'])
+def addcart():
+    if request.method == 'POST':
+        bookform  = request.form
+        email = session['email']
+        b_id = bookform['cartid']
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO cart VALUES (%s , %s )" , [email , b_id])
+        cur.connection.commit()
+        #Write some query
+        cart = cur.fetchall()
+    return render_template('listOfMyBooks.html' , booksList = cart)
+
 @app.route('/bookDetails', methods=['GET' , 'POST'])
 def owner():
         print('Book Details  \n')
         bookname = request.args.get('book')
+        #email = session['email']
+        img = '123'
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM books WHERE title = %s ", [bookname])
+        cur.execute("SELECT * FROM books WHERE title = %s LIMIT 1", [bookname])
         bookDetails = cur.fetchone()
+        img = bookDetails[0]
         cur.execute("SELECT uploader , price , book_id FROM books WHERE title = %s AND status = 'available' ORDER BY price ASC" , [bookname])
         bookSellers = cur.fetchall()
-        image = bookDetails[12]
         cur.execute("SELECT * FROM reviews WHERE title = %s ", [bookname])
         reviews = cur.fetchall()
-        return render_template('bookSellers.html' , display = bookDetails , seller = bookSellers , reviews = reviews )
+        return render_template('bookDetails.html' , display = bookDetails , seller = bookSellers , reviews = reviews ,img = img)
     #return '\nBook Details'
-
+@app.route('/getImage/<filename>')
+def getImage(filename):
+    cur = mysql.connection.cursor()
+    print("filename = %s  " ,filename)
+    try:
+        return send_from_directory('files/images' ,filename+".jpg")
+    except:
+        try:
+            return send_from_directory('files/images' , filename+".png")
+        except:
+            try:
+                cur.execute("SELECT book_id FROM books WHERE title = %s ",[filename])
+                id = cur.fetchone()
+                print("id = " , id)
+                try:
+                    return send_from_directory('files/images' , id[0]+'.png')
+                except:
+                    return send_from_directory('files/images' , id[0]+'.jpg')
+            except:
+                return send_from_directory('files/images' , 'dummy.jpg')
 
 @app.route('/requestBook' , methods=['GET' , 'POST'])
 
@@ -355,29 +400,19 @@ def requestBook():
                 except:
                     return 'Failed'
             except:
-                return 'Login first'
+                return redirect(url_for('login'))
             #print(cur.fetchone())
     return ' hmmmm Your request has been sent to the seller :)'
 
-@app.route('/search', methods=['GET' , 'POST'])
-def search():
-    i = 0
-    print("something")
-
-    if i == 0:
-        i = i + 1
-        return render_template('search.html')
-    else:
-        return '<h1> hello </h1> hello'
 
 
 @app.route('/notifiy')
 def notify():
     #check if logged in or not
-    if session['email'] is None :
-        session.pop('google_token', None)
-        return render_template('index.html')
-
+    try:
+        email = session['email']
+    except:
+        return redirect(url_for('login'))
     cur = mysql.connection.cursor()
     email = session['email']
     #cur.execute("SELECT * FROM books WHERE status = 'booked' AND uploader = %s " , [email])
@@ -400,24 +435,34 @@ def notify():
 
 @app.route('/asd')
 def asd():
-    try:
-        email = session['email']
-        if email is None :
-            return 'Login Please'
-        else :
+            email = session['email']
             cur = mysql.connection.cursor()
             cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
             branch = cur.fetchone();
             #print("Dashboard")
             session['dept'] = branch[0]
-            cur.execute("SELECT DISTINCT book_id ,title ,author ,price,  rating , branch ,rating  FROM books WHERE branch = %s " , [branch[0]] )
+            cur.execute("SELECT DISTINCT title , author FROM books WHERE branch = %s " , [branch[0]] )
             display = cur.fetchall()
             cur.execute("SELECT * FROM books WHERE status = 'booked' AND uploader = %s " , [email])
             notifications = cur.fetchall()
             #print(display)
             return render_template('dashboards.html' , userDetails = display , notif = notifications)
+            """except:
+            return "Log in please" """
+            """try:
+                email = session['email']
+                if email is None :
+                    return 'Login Please'
+                else :"""
+
+
+@app.route('/contact')
+def contact():
+    try:
+        email = session['email']
+        return render_template('contact.html')
     except:
-        return "Log in please"
+        return redirect(url_for('login'))
 
 @app.route('/closeDeal', methods=['GET', 'POST'])
 def closeDeal():
@@ -430,13 +475,26 @@ def closeDeal():
         updateQuery2 = f"UPDATE sold SET status = 'sold' WHERE book_id = {bookid}"
         cur.execute(updateQuery)
         cur.execute(updateQuery2)
-        #mysql.connection.commit()
+        mysql.connection.commit()
         cur.execute("SELECT * FROM sold WHERE book_id = '6'")
         json = jsonify(cur.fetchone())
         return render_template( 'ownerDetails.html' ,js = json)
         #cur.close()
         #return bookid
 
+
+@app.route('/search' , methods=['GET' , 'POST'])
+def search():
+
+    key = request.args.get('search')
+    cur = mysql.connection.cursor()
+    print(key)
+    cur.execute("SELECT DISTINCT title , author FROM books WHERE title LIKE %s OR author LIKE %s  LIMIT 5", ("%" + key + "%", "%" + key + "%"))
+    #cur.execute("SELECT * FROM books WHERE title LIKE '%s'% " ,[key])
+    res = cur.fetchall()
+    jsonResult = jsonify(res)
+   
+    return jsonify(res)
 
 @app.route('/sell',methods=['GET' , 'POST'])
 def sell():
@@ -455,12 +513,11 @@ def sell():
             if title == "" or author == "" or price == "" or uploader == "" or branch == "" or sem == "" :
                 return 'Please Enter All the values'
             cur  = mysql.connection.cursor()
-            cur.execute("INSERT INTO books(title , author , price , uploader , rating , branch , sem ,status ) VALUES(%s , %s , %s , %s , %s , %s ,%s  ,'available' )" , (title , author , price , uploader , rating , branch , sem  ))
+            id = str(uuid.uuid4().fields[-1])[:8]
+            cur.execute("INSERT INTO books(book_id , title , author , price , uploader , rating , branch , sem ,status ) VALUES(%s , %s , %s , %s , %s , %s , %s ,%s  ,'available' )" , (id , title , author , price , uploader , rating , branch , sem  ))
             mysql.connection.commit()
             cur.close()
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT COUNT(*) FROM books")
-        fname = cur.fetchone()
+
         folder_name = 'images'
         target = os.path.join(APP_ROOT, 'files/{}'.format(folder_name))
         print("target = " + target)
@@ -474,7 +531,7 @@ def sell():
             print(filename)
             # This is to verify files are supported
             ext = os.path.splitext(filename)[1]
-            filename = str(fname[0]) + ext
+            filename = str(id) + ext
             if (ext == ".jpg") or (ext == ".png"):
                 print("File supported moving on...")
             else:
@@ -484,7 +541,7 @@ def sell():
             print("Save it to:", destination)
             upload.save(destination)
             return 'done'
-        return render_template('sell.html')
+        return render_template('upload.html')
 
 @google.tokengetter
 def get_google_oauth_token():
