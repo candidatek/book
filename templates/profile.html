@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    {%for i in dis%} <br>
+    Name : {{i[2]}} <br>
+    Email : {{i[0]}} <br>
+    Branch : {{i[3]}} <br>
+    Phone : {{i[5]}} <br>
+    <br><br>
+    <a href="profile/uploaded">Books in Stall </a> <br>
+    <a href="profile/pending">Books to be submitted</a> <br>
+    <a href="profile/sold">Books Sold</a> <br>
+    <a href="profile/requested">Books Requested</a> <br>
+    <a href="profile/purchased">Books Purchased</a> <br>
+
+ {%endfor%}
+  </body>
+</html>

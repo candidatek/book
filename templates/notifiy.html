@@ -1,0 +1,14 @@
+
+<br><br>
+Notifications <br><br>
+  {%for n in notifiy %}
+
+<h4>Title : {{n[1]}} <br>
+     Author : {{n[2]}} </h4>
+<h4>Price : {{n[4]}}  </h4>
+<form action="/closeDeal" method="post">
+Request :<button type="submit" name="reqbook" value="{{n[13]}}">{{n[5]}}</button><br><br>
+<button type="submit" name="deal" value="{{n[0]}}">Close Deal</button>
+</form>
+ 
+    {% endfor %}
