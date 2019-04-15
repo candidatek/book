@@ -29,7 +29,6 @@ app.config['GOOGLE_SECRET'] = "XJYg7VSkRLF3T47uoOYcC_2S"
 app.debug = True
 app.secret_key = 'development'
 oauth = OAuth(app)
-<<<<<<< HEAD
 
 google = oauth.remote_app(
     'google',
@@ -45,23 +44,6 @@ google = oauth.remote_app(
     authorize_url='https://accounts.google.com/o/oauth2/auth',
 )
 
-=======
-
-google = oauth.remote_app(
-    'google',
-    consumer_key=app.config.get('GOOGLE_ID'),
-    consumer_secret=app.config.get('GOOGLE_SECRET'),
-    request_token_params={
-        'scope': 'email'
-    },
-    base_url='https://www.googleapis.com/oauth2/v1/',
-    request_token_url=None,
-    access_token_method='POST',
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-)
-
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
 @app.route('/')
 def first():
     session.pop('google_token' , None)
@@ -138,7 +120,6 @@ def newuser():
         return redirect(url_for('dashboard'))
     return render_template('userDetails.html')
 
-<<<<<<< HEAD
 
 @app.route('/result' , methods=['GET' , 'POST'])
 def result():
@@ -159,8 +140,6 @@ def result():
         return render_template('dashboards.html' , userDetails = res )
 
 
-=======
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
 @app.route('/dashboard')
 def dashboard():
     try:
@@ -174,15 +153,11 @@ def dashboard():
     session['dept'] = branch[0]
     cur.execute("SELECT full_name , email ,phone  ,branch FROM users WHERE  email =  %s " , [email] )
     display = cur.fetchall()
-<<<<<<< HEAD
     name = display[0][0]
-=======
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
     cur.execute("SELECT  * FROM books INNER JOIN sold ON books.uploader=sold.seller WHERE books.status = 'booked' AND books.book_id = sold.book_id AND books.uploader = %s ",[email])
     notifiy = cur.fetchall()
     cur.execute("SELECT * FROM sold , books  WHERE sold.buyer = %s AND sold.status = 'sold' AND books.status = 'sold'",[email])
     purchased  = cur.fetchall()
-<<<<<<< HEAD
     cur.execute("SELECT * FROM sold WHERE buyer = %s AND status = 'booked'",[email])
     request = cur.fetchall()
     #print(display)
@@ -192,10 +167,6 @@ def dashboard():
     toBeSold = cur.fetchall()
 
     return render_template('payment.html' ,dis = display , notifiy = notifiy ,purchased = purchased ,name = name , sold  = sold , toBeSold = toBeSold  )
-=======
-    #print(display)
-    return render_template('payment.html' ,dis = display , notifiy = notifiy ,purchased = purchased)
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
 
 
 @app.route('/profile')
@@ -255,11 +226,7 @@ def pruchased():
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM sold , books  WHERE sold.buyer = %s AND sold.status = 'sold' AND books.status = 'sold'",[email])
         purchased  = cur.fetchall()
-<<<<<<< HEAD
         print(purchased)
-=======
-        print(booksList)
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
         return render_template('addreview.html' , purchased = purchased)
 
 
@@ -318,11 +285,7 @@ def sold():
     #try:
         email = session['email']
         cur = mysql.connection.cursor()
-<<<<<<< HEAD
         cur.execute("SELECT * FROM sold , books WHERE seller  = %s AND status = 'sold' AND sold.book_id = books.book_id ",[email])
-=======
-        cur.execute("SELECT * FROM sold WHERE seller  = %s AND status = 'sold'",[email])
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
         booksList = cur.fetchall()
         return render_template('listOfMyBooks.html' , booksList = booksList)
 
@@ -500,10 +463,7 @@ def notify():
 
 @app.route('/asd')
 def asd():
-<<<<<<< HEAD
         try:
-=======
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
             email = session['email']
             cur = mysql.connection.cursor()
             cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
@@ -516,21 +476,11 @@ def asd():
             notifications = cur.fetchall()
             #print(display)
             return render_template('dashboards.html' , userDetails = display , notif = notifications)
-<<<<<<< HEAD
         except:
             cur.execute("SELECT DISTINCT title , author FROM books" )
             display = cur.fetchall()
             #print(display)
             return render_template('dashboards.html' , userDetails = display )
-=======
-            """except:
-            return "Log in please" """
-            """try:
-                email = session['email']
-                if email is None :
-                    return 'Login Please'
-                else :"""
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
 
 
 @app.route('/contact')
@@ -570,11 +520,7 @@ def search():
     #cur.execute("SELECT * FROM books WHERE title LIKE '%s'% " ,[key])
     res = cur.fetchall()
     jsonResult = jsonify(res)
-<<<<<<< HEAD
 
-=======
-   
->>>>>>> fee524a144a34edf46582b50271df0ffe4c42827
     return jsonify(res)
 
 @app.route('/sell',methods=['GET' , 'POST'])
