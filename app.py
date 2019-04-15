@@ -46,8 +46,14 @@ google = oauth.remote_app(
 
 @app.route('/')
 def first():
-    session.pop('google_token' , None)
-    return render_template('index.html')
+    try:
+        email = session['email']
+        print("EMAIL")
+        return redirect(url_for('dashboard'))
+    except:
+        session.pop('google_token' , None)
+        print("POP")
+        return render_template('index.html')
 
 @app.route('/google')
 def index():
@@ -145,7 +151,7 @@ def dashboard():
     try:
         email = session['email']
     except:
-        return redirect(url_for('login'))
+        redirect(url_for('login'))
     cur = mysql.connection.cursor()
     cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
     branch = cur.fetchone();
@@ -165,8 +171,10 @@ def dashboard():
     sold = cur.fetchall()
     cur.execute("SELECT * FROM books WHERE uploader = %s AND status = 'available'",[email])
     toBeSold = cur.fetchall()
+    cur.execute("SELECT * FROM sold , books WHERE sold.buyer  = %s AND sold.status = 'booked' AND sold.book_id = books.book_id ",[email])
+    requested = cur.fetchall()
 
-    return render_template('payment.html' ,dis = display , notifiy = notifiy ,purchased = purchased ,name = name , sold  = sold , toBeSold = toBeSold  )
+    return render_template('payment.html' ,dis = display , notifiy = notifiy ,purchased = purchased ,name = name , sold  = sold , toBeSold = toBeSold  , requested = requested )
 
 
 @app.route('/profile')
@@ -216,7 +224,7 @@ def editDetails():
             except:
                 deleteId = editDetails['delete']
                 cur.execute("DELETE FROM books WHERE book_id = %s " , [deleteId])
-                #mysql.connection.commit()
+                mysql.connection.commit()
                 return deleteId
 
 @app.route('/profile/purchased')
@@ -525,6 +533,12 @@ def search():
 
 @app.route('/sell',methods=['GET' , 'POST'])
 def sell():
+    try:
+        cur  = mysql.connection.cursor()
+        email = session['email']
+        cur.execute("SELECT full_name FROM users WHERE email = %s ", [email])
+        name = cur.fetchone()[0]
+        print(name)
         if request.method == 'POST' :
             userDetais = request.form
             title  = userDetais['title']
@@ -539,36 +553,38 @@ def sell():
             #email = userDetais['email']
             if title == "" or author == "" or price == "" or uploader == "" or branch == "" or sem == "" :
                 return 'Please Enter All the values'
-            cur  = mysql.connection.cursor()
+
             id = str(uuid.uuid4().fields[-1])[:8]
             cur.execute("INSERT INTO books(book_id , title , author , price , uploader , rating , branch , sem ,status ) VALUES(%s , %s , %s , %s , %s , %s , %s ,%s  ,'available' )" , (id , title , author , price , uploader , rating , branch , sem  ))
             mysql.connection.commit()
             cur.close()
 
-        folder_name = 'images'
-        target = os.path.join(APP_ROOT, 'files/{}'.format(folder_name))
-        print("target = " + target)
-        if not os.path.isdir(target):
-            os.mkdir(target)
-            print(request.files.getlist("image"))
-        for upload in request.files.getlist("image"):
-            print(upload)
-            print("{} is the file name".format(upload.filename))
-            filename = upload.filename
-            print(filename)
-            # This is to verify files are supported
-            ext = os.path.splitext(filename)[1]
-            filename = str(id) + ext
-            if (ext == ".jpg") or (ext == ".png"):
-                print("File supported moving on...")
-            else:
-                render_template("Error.html", message="Files uploaded are not supported...")
-            destination = "/".join([target, filename])
-            print("Accept incoming file:", filename)
-            print("Save it to:", destination)
-            upload.save(destination)
-            return 'done'
-        return render_template('upload.html')
+            folder_name = 'images'
+            target = os.path.join(APP_ROOT, 'files/{}'.format(folder_name))
+            print("target = " + target)
+            if not os.path.isdir(target):
+                os.mkdir(target)
+                print(request.files.getlist("image"))
+            for upload in request.files.getlist("image"):
+                print(upload)
+                print("{} is the file name".format(upload.filename))
+                filename = upload.filename
+                print(filename)
+                # This is to verify files are supported
+                ext = os.path.splitext(filename)[1]
+                filename = str(id) + ext
+                if (ext == ".jpg") or (ext == ".png"):
+                    print("File supported moving on...")
+                else:
+                    render_template("Error.html", message="Files uploaded are not supported...")
+                destination = "/".join([target, filename])
+                print("Accept incoming file:", filename)
+                print("Save it to:", destination)
+                upload.save(destination)
+                return 'done'
+        return render_template('upload.html' ,name = name)
+    except:
+        return redirect(url_for('login'))
 
 @google.tokengetter
 def get_google_oauth_token():

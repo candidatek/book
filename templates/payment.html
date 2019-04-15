@@ -35,6 +35,15 @@
      xhttp.open("GET",  url + "?search="+key  , true);
      xhttp.send();
      }
+     // function addreview(){
+     //   console.log("function called");
+     //   var area = document.createElement("textarea");
+     //   var btn = document.createElement("button");
+     //   btn.innerHTML ="<br><br>" +   "Submit" ;
+     //   document.getElementById("area").appendChild(area);
+     //   document.getElementById("area").appendChild(btn);
+     //  document.getElementById("addreview").style.display ="none" ;
+     // }
      </script>
      <style type = 'text/css' media="screen">
 
@@ -116,14 +125,17 @@ background-color: #eee;
             <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
                <ul class="navbar-nav ">
                   <li class="nav-item ">
-                     <a class="nav-link" href="http://127.0.0.1:5000/">Home <span class="sr-only">(current)</span></a>
+                     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
                   </li>
                   <li class="nav-item">
                      <a href="about.html" class="nav-link">About</a>
                   </li>
+                  <li class="nav-item active">
+                     <a href="/sell" class="nav-link">Sell</a>
+                  </li>
 
                   <li class="nav-item active">
-                     <a href="shop.html" class="nav-link">Shop Now</a>
+                     <a href="/asd" class="nav-link">Shop Now</a>
                   </li>
                   <li class="nav-item">
                      <a href="/dashboard" class="nav-link">{{name}}</a>
@@ -231,6 +243,16 @@ background-color: #eee;
                                                        <div class="pay_info">
                                                           <div class="vertical_post">
                                                             Books requested
+                                                            {%for s in requested %}
+                                                            Title : {{s[7]}} <br>
+                                                            Author : {{s[8]}} <br>
+                                                            Buyer: {{s[1]}} <br>
+                                                            seller: {{s[2]}} <br>
+                                                            Dated :{{s[4]}} <br>
+                                                            Transaction Id: {{s[5]}} <br>
+                                                            Price :{{s[10]}} <br>
+                                                            <hr>
+                                                                         {%endfor%}
 
                                                           </div>
                                                        </div>
@@ -259,13 +281,15 @@ background-color: #eee;
                                                       Dated :{{s[4]}} <br>
                                                       Transaction Id: {{s[5]}} <br>
                                                       Price :{{s[10]}} <br>
+                                                      <button type="add" id = "addreview" onclick="addreview()" name="button">Add Public Review</button>
+                                                      <p id="area" name="area"></p>
                                                       <hr>
 
                                                       {%endfor%}
                                                     </div>
 
                                                     <div class="tab7">
-                                                        
+
                                                        {% for s in toBeSold %}
                                                        Title : {{s[1]}} <br>
                                                        Author: {{s[2]}} <br>
