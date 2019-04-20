@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript">
+
+      function add(){
+        var comments = document.getElementById('comments').value;
+        console.log(comments);
+        if(comments.length < 3)
+        return;
+        var url = 'http://127.0.0.1:5000/addreview';
+        var xhttp = new XMLHttpRequest();
+        var bookid = '18032932';
+        xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var js = JSON.parse(this.responseText);
+          if(js.length < 1 ){
+          document.getElementById("demo").innerHTML = "No Results Found";
+          return;
+        }
+        var print = js;
+        document.getElementById('comments').value = "";
+        document.getElementById("demo").innerHTML = "<center>"+print+"</center>";
+      }
+    };
+    xhttp.open("GET",  url + "?bookid="+bookid+"&comments="+comments  , true);
+    xhttp.send();
+    }
+
+    </script>
+  </head>
+  <body>
+    <textarea id= "comments" name="comments" rows="8" cols="80"></textarea>
+    <button type="submit" id = "add" onclick = "add()" name="button">SEND</button>
+    <p id="demo"></p>
+  </body>
+</html>
