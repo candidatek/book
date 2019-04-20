@@ -243,9 +243,34 @@ def pruchased():
         print(purchased)
         return render_template('addreview.html' , purchased = purchased)
 
+@app.route('/test')
+def test():
+    return render_template('rev.html')
+
+@app.route('/addreview')
+def addreview():
+    cur = mysql.connection.cursor()
+    try:
+        email = session['email']
+        comments = request.args.get('comments')
+        bookid = request.args.get('bookid')
+        print("rest api function called")
+        print(bookid)
+        cur.execute("SELECT title , author FROM books WHERE book_id = %s ", [bookid])
+        res = cur.fetchone()
+        title = res[0]
+        author = res[1]
+        cur.execute("INSERT INTO reviews VALUES (%s ,%s ,%s ,%s)" , [title , author ,email , comments])
+        #cur.connection.commit()
+        str = 'operation Succssful'
+        return jsonify(str)
+    except:
+        str = 'operation Failed'
+        return jsonify(str)
+
 
 @app.route('/profile/purchased/addreview' ,methods = ['GET' , 'POST'])
-def addreview():
+def addreviews():
     if request.method == 'POST' :
         reviewForm = request.form
         bookid = reviewForm['addpublicreview']
