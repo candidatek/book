@@ -196,16 +196,22 @@ def profile():
 
 @app.route('/profile/edit' , methods=['GET' , 'POST'])
 def editDetails():
+    try:
+        email = session['email']
+    except:
+        return redirect(url_for('login'))
     cur = mysql.connection.cursor()
     if request.method == 'POST' :
         editDetails = request.form
         try:
+            cur.execute("SELECT full_name FROM users WHERE email = %s " , [email])
+            name = cur.fetchone()[0]
             edit = editDetails['edit']
             print(edit)
             cur.execute("SELECT * FROM books WHERE book_id = %s AND status = 'available' " , [edit] )
             bookDetails = cur.fetchone();
             print("HERE")
-            return render_template('editBookDetails.html' , b = bookDetails)
+            return render_template('editBookDetails.html' , b = bookDetails ,name = name)
         except:
             try:
                 bookIdForDelete = editDetails['updateData']
@@ -471,23 +477,26 @@ def notify():
 
 @app.route('/asd')
 def asd():
+        cur = mysql.connection.cursor()
         try:
             email = session['email']
-            cur = mysql.connection.cursor()
+            cur.execute("SELECT full_name FROM users WHERE email = %s " , [email])
+            name = cur.fetchone()[0]
             cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
             branch = cur.fetchone();
-            #print("Dashboard")
+            print("Dashboard")
             session['dept'] = branch[0]
             cur.execute("SELECT DISTINCT title , author FROM books WHERE branch = %s " , [branch[0]] )
             display = cur.fetchall()
             cur.execute("SELECT * FROM books WHERE status = 'booked' AND uploader = %s " , [email])
             notifications = cur.fetchall()
             #print(display)
-            return render_template('dashboards.html' , userDetails = display , notif = notifications)
+
+            return render_template('dashboardsLogedIn.html' , userDetails = display , notif = notifications , name = name )
         except:
             cur.execute("SELECT DISTINCT title , author FROM books" )
             display = cur.fetchall()
-            #print(display)
+            print("Loged out")
             return render_template('dashboards.html' , userDetails = display )
 
 
