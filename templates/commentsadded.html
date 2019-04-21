@@ -358,176 +358,14 @@ background-color: #eee;
                <div class="shop_inner_inf">
                   <div class="privacy about">
 
-                    <a href="/dashboard"> <h3>Dash<span>board</span></h3> </a>
+                    <a href="/dashboard"> <h3>&nbsp Review Added </h3> </a>
 
-
-
-                            <section class="checkout py-lg-4 py-md-3 py-sm-3 py-3">
-                               <div class="container py-lg-5 py-md-4 py-sm-4 py-3">
-                                  <div class="ads-grid_shop">
-                                     <div class="shop_inner_inf">
-                                        <div class="privacy about">
-                                           <div class="responsive_tabs">
-                                              <div id="horizontalTab">
-                                                 <ul class="resp-tabs-list">
-                                                   <li id="ta">My Profile</li>
-                                                   <li id="tb">Notifications</li>
-                                                   <li id="tb">Books Requested</li>
-                                                   <li id="tb">Books Sold</li>
-                                                   <li id="tb">Books Purchased</li>
-                                                   <!-- <li id="tb">Books Submitted</li> -->
-                                                   <li id="tb">Books To be Sold</li>
-                                                 </ul>
-                                                 <div class="resp-tabs-container">
-                                                    <!--/tab_one-->
-                                                    <div class="tab1">
-                                                       <div class="pay_info">
-                                                          <div class="vertical_post check_box_agile">
-                                                             <h5>My Profile</h5>
-                                                             <h4> {%for i in dis%}
-                                                              Name : {{i[0]}} <br>
-                                                              Email : {{i[1]}} <br>
-                                                              Branch : {{i[3]}} <br>
-                                                              Phone : {{i[2]}}
-                                                        {%endfor%}</h4>
-                                                             <div class="checkbox">
-                                                                <div class="check_box_one cashon_delivery">
-                                                                   <label class="anim">
-                                                                   </label>
-                                                                </div>
-                                                             </div>
-                                                          </div>
-                                                       </div>
-                                                    </div>
-                                                    <!--//tab_one-->
-                                                    <div class="tab2">
-                                                       <div class="pay_info">
-                                                            {%for n in notifiy %}
-
-                                                             Title : {{n[1]}} <br>
-                                                             Author : {{n[2]}} <br>
-                                                             Price : {{n[4]}}
-                                                          <form action="/closeDeal" method="post">
-
-                                                          Request :<button type="submit" name="reqbook"  value="{{n[13]}}">{{n[5]}}</button> &nbsp&nbsp&nbsp&nbsp
-                                                          <button type="submit" name="deal" value="{{n[0]}}">Close Deal</button>
-                                                          </form>
-                                                          <hr>
-
-
-                                                              {% endfor %}
-                                                          </form>
-                                                       </div>
-                                                    </div>
-                                                    <div class="tab3">
-                                                       <div class="pay_info">
-                                                          <div class="vertical_post">
-                                                            Books requested
-                                                            {%for s in requested %}
-                                                            Title : {{s[7]}} <br>
-                                                            Author : {{s[8]}} <br>
-                                                            Buyer: {{s[1]}} <br>
-                                                            seller: {{s[2]}} <br>
-                                                            Dated :{{s[4]}} <br>
-                                                            Transaction Id: {{s[5]}} <br>
-                                                            Price :{{s[10]}} <br>
-                                                            <hr>
-                                                                         {%endfor%}
-
-                                                          </div>
-                                                       </div>
-                                                    </div>
-                                                    <div class="tab4">
-
-                                                      {%for s in sold %}
-                                                      Title : {{s[7]}} <br>
-                                                      Author : {{s[8]}} <br>
-                                                      Buyer: {{s[1]}} <br>
-                                                      seller: {{s[2]}} <br>
-                                                      Dated :{{s[4]}} <br>
-                                                      Transaction Id: {{s[5]}} <br>
-                                                      Price :{{s[10]}} <br>
-                                                      <hr>
-
-                                                       {%endfor%}
-                                                    </div>
-                                                    <div class="tab5">
-                                                      purchased
-                                                      {% for s in purchased %}
-                                                      Title : {{s[7]}} <br>
-                                                      Author : {{s[8]}} <br>
-                                                      Buyer: {{s[1]}} <br>
-                                                      seller: {{s[2]}} <br>
-                                                      Dated :{{s[4]}} <br>
-                                                      Transaction Id: {{s[5]}} <br>
-                                                      Price :{{s[10]}} <br>
-                                                      <input type="text" id = "bookid" name="bookid" value="{{s[0]}}"> 
-
-
-
-  <form class="" action="rev" method="get">
-
-  <button type="submit" name="bookid" value="{{s[0]}}">ADD REVIEW</button>
-
-  </form>
-
-
-<!-- <div id="popup1" class="overlay">
-	<div class="popup">
-		<h2>{{s[0]}}</h2>
-		<a class="close" href="#">&times;</a>
-		<div class="content">
-     <textarea name="comments" id = "comments"  rows="5" cols="20"></textarea> <br>
-
-             <button onclick="sendcomments()">submit</button>
-		</div>
-	</div>
-</div> -->
-
-                                                      <p id="area" name="area"></p>
-                                                      <hr>
-
-                                                      {%endfor%}
-                                                    </div>
-
-                                                    <div class="tab7">
-
-                                                       {% for s in toBeSold %}
-                                                       Title : {{s[1]}} <br>
-                                                       Author: {{s[2]}} <br>
-                                                       Price :{{s[4]}} <br>
-                                                       <form class="" action="profile/edit" method="post">
-                                                         <button type="submit" name="edit" value ="{{s[0]}}">Edit </button> &nbsp&nbsp&nbsp
-                                                         <button type="submit" name="delete" value ="{{s[0]}}">Delete</button>
-                                                       </form>
-                                                       <hr>
-
-                                                       {%endfor%}
-
-                                                    </div>
-                                                    <div class="tab8">
-                                                      sold
-                                                    </div>
-
-
-
-                                                 </div>
-                                              </div>
-                                           </div>
-                                           <!--//tabs-->
-                                        </div>
-                                     </div>
-                                     <!-- //payment -->
-                                     <div class="clearfix"></div>
-                                  </div>
-                               </div>
-                            </section>
-
-                           </div>
-                        </div>
-
-                     </div>
-                     <!--//tabs-->
+<div class="container"><br><br>
+  <!-- <h2>Alert Links</h2>
+  <p>Add the alert-link class to any links inside the alert box to create "matching colored links".</p> -->
+  <div class="alert alert-success">
+    <strong>Success!</strong> We Thank You for your valuable review of the book   <a href="#" class="alert-link"></a>.
+  </div>
 
                <!-- //payment -->
                <div class="clearfix"></div>
@@ -535,15 +373,6 @@ background-color: #eee;
          </div>
       </section>
 
-      <!-- footer -->
-      <footer class="py-lg-4 py-md-3 py-sm-3 py-3 text-center">
-         <div class="copy-agile-right">
-            <p>
-
-            </p>
-         </div>
-      </footer>
-      <!-- //footer -->
       <!-- Modal 1-->
 
       <!-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -563,40 +392,6 @@ background-color: #eee;
       <!-- cart-js -->
       <script src="{{url_for('static' , filename = 'js/minicart.js')}}"></script>
       <script>
-
-          var id = "";
-           function add(id){
-
-             console.log(id.getAttribute('value') );
-             id = id.getAttribute('value') +" clicked " ;
-           }
-           function sendcomments(){
-             id = id.getAttribute('value') +" clicked ";
-             console.log(id);
-             var comments = document.getElementById('comments').value;
-             console.log(comments);
-           }
-           //   if(comments.length < 3)
-           //   return;
-           //   var url = 'http://127.0.0.1:5000/addreview';
-           //   var xhttp = new XMLHttpRequest();
-           //   var bookid = '18032932';
-           //   xhttp.onreadystatechange = function() {
-           //   if (this.readyState == 4 && this.status == 200) {
-           //     var js = JSON.parse(this.responseText);
-           //     if(js.length < 1 ){
-           //     document.getElementById("demo").innerHTML = "No Results Found";
-           //     return;
-           //   }
-           //   var print = js;
-           //   document.getElementById('comments').value = "";
-           //   document.getElementById("demo").innerHTML = "<center>"+print+"</center>";
-           // }
-           // };
-           // xhttp.open("GET",  url + "?bookid="+bookid+"&comments="+comments  , true);
-           // xhttp.send();
-
-
          toys.render();
 
          toys.cart.on('toys_checkout', function (evt) {

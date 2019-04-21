@@ -11,6 +11,9 @@ import sys
 import config
 import yaml
 import os
+#cart
+#message
+
 
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -89,9 +92,6 @@ def authorized():
     email = me.data['email']
     verifiy = me.data['verified_email']
     session['email'] = email
-    print(email)
-    print(verifiy)
-    print(type(email))
     #verify weather it is rvce email # ID
     if "rvce.edu.in" not in email:
         print("User Login not allowed")
@@ -151,7 +151,7 @@ def dashboard():
     try:
         email = session['email']
     except:
-        redirect(url_for('login'))
+        return redirect(url_for('login'))
     cur = mysql.connection.cursor()
     cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
     branch = cur.fetchone();
@@ -176,23 +176,6 @@ def dashboard():
 
     return render_template('payment.html' ,dis = display , notifiy = notifiy ,purchased = purchased ,name = name , sold  = sold , toBeSold = toBeSold  , requested = requested )
 
-
-@app.route('/profile')
-def profile():
-    try:
-        email = session['email']
-    except:
-        return redirect(url_for('login'))
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT branch FROM users WHERE email = %s " , [email] )
-    branch = cur.fetchone();
-    session['dept'] = branch[0]
-    cur.execute("SELECT * FROM users WHERE email = %s " , [email] )
-    display = cur.fetchall()
-    #print(display)
-    jsondata = jsonify(display)
-    #return jsondata
-    return render_template('profile.html' , dis = display )
 
 @app.route('/profile/edit' , methods=['GET' , 'POST'])
 def editDetails():
@@ -226,12 +209,12 @@ def editDetails():
                 print(author+" "+id)
                 cur.execute("UPDATE books SET title = %s , author = %s , edition = %s , price = %s , rating = %s ,sem = %s WHERE book_id = %s " ,[title , author , edition , price , rating , sem , id])
                 mysql.connection.commit()
-                return 'Updated Sucessfully'
+                return render_template('updated.html' , name = name)
             except:
                 deleteId = editDetails['delete']
                 cur.execute("DELETE FROM books WHERE book_id = %s " , [deleteId])
                 mysql.connection.commit()
-                return deleteId
+                return render_template('bookdeleted.html' , name = name )
 
 @app.route('/profile/purchased')
 def pruchased():
@@ -261,22 +244,39 @@ def addreview():
         title = res[0]
         author = res[1]
         cur.execute("INSERT INTO reviews VALUES (%s ,%s ,%s ,%s)" , [title , author ,email , comments])
-        #cur.connection.commit()
+        cur.connection.commit()
         str = 'operation Succssful'
         return jsonify(str)
     except:
         str = 'operation Failed'
         return jsonify(str)
 
+@app.route('/rev'  ,methods = ['GET' , 'POST'])
+def rev():
+    cur = mysql.connection.cursor()
+    bookid = request.args.get('bookid')
+    print(bookid)
+    cur.execute("SELECT * FROM books WHERE book_id = %s ", [bookid])
+    books = cur.fetchone()
+    return render_template('addreview.html' , books = books)
 
-@app.route('/profile/purchased/addreview' ,methods = ['GET' , 'POST'])
+@app.route('/msg' ,methods = ['GET' , 'POST'])
+def msg():
+    return render_template('bookdeleted.html')
+
+@app.route('/purchased/addreview' ,methods = ['GET' , 'POST'])
 def addreviews():
+    cur = mysql.connection.cursor()
+    try:
+        email = session['email']
+        cur.execute("SELECT full_name FROM users WHERE email = %s ", [email])
+        name = cur.fetchone()[0]
+    except:
+        return redirect(url_for('login'))
     if request.method == 'POST' :
         reviewForm = request.form
         bookid = reviewForm['addpublicreview']
         bookreview= reviewForm['publicreview']
-        email = session['email']
-        cur = mysql.connection.cursor()
         cur.execute("SELECT title , author FROM books WHERE book_id = %s ", [bookid])
         bookDetails = cur.fetchone()
         title = bookDetails[0]
@@ -285,8 +285,8 @@ def addreviews():
         mysql.connection.commit()
         print(bookid)
         print(bookreview)
-        return render_template('addreview.html')
-    return  "NOT POST"
+        return render_template('commentsadded.html' , name = name)
+    return "NOT POST"
 
 
 
@@ -298,7 +298,6 @@ def uploaded():
         cur.execute("SELECT * FROM books WHERE uploader = %s AND status = 'available'",[email])
         booksList = cur.fetchall()
         return render_template('listOfMyBooks.html' , booksList = booksList)
-
     except :
         return redirect(url_for('logout'))
     #email = session['email']
@@ -330,14 +329,14 @@ def sold():
 
 @app.route('/profile/requested')
 def reqquested():
-    #try:
+    try:
         email = session['email']
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM sold WHERE buyer = %s AND status = 'booked'",[email])
         booksList = cur.fetchall()
         return render_template('listOfMyBooks.html' , booksList = booksList)
-    #except :
-    #    return redirect(url_for('logout'))
+    except :
+        return redirect(url_for('logout'))
 
 @app.route('/addcart' , methods=['GET','POST'])
 def addcart():
@@ -390,7 +389,6 @@ def getImage(filename):
                 return send_from_directory('files/images' , 'dummy.jpg')
 
 @app.route('/requestBook' , methods=['GET' , 'POST'])
-
 def requestBook():
     if request.method  == 'POST' :
         ownerForm = request.form
@@ -463,13 +461,13 @@ def requestBook():
                         server.quit()
                     except:
                         return 'email not sent !'
-                    return 'Email notification has been sent to the user'
+                    return render_template('bookrequested.html' , name = reqName)
                 except:
                     return 'Failed'
             except:
                 return redirect(url_for('login'))
             #print(cur.fetchone())
-    return ' hmmmm Your request has been sent to the seller :)'
+    return 'ERROR '
 
 
 
