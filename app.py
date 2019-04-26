@@ -338,18 +338,54 @@ def reqquested():
     except :
         return redirect(url_for('logout'))
 
-@app.route('/addcart' , methods=['GET','POST'])
-def addcart():
+@app.route('/removecart' , methods=['GET','POST'])
+def removecart():
+    try:
+        email = session['email']
+    except:
+        return redirect(url_for('login'))
     if request.method == 'POST':
         bookform  = request.form
+        b_id = bookform['rm']
+        cur = mysql.connection.cursor()
+        try:
+            cur.execute("DELETE FROM cart WHERE cart_email = %s AND b_id = %s " , [email , b_id])
+            print("DELETING FROM CART")
+            cur.connection.commit()
+        except:
+            cur.execute("SELECT * from cart, books  WHERE cart_email = %s AND book_id = b_id ", [email])
+        cur.execute("SELECT * from cart, books  WHERE cart_email = %s AND book_id = b_id ", [email])
+        cart = cur.fetchall()
+        print(cart)
+    return render_template('checkout.html' ,cart = cart)
+@app.route('/addcart' , methods=['GET','POST'])
+def addcart():
+    try:
         email = session['email']
+    except:
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        bookform  = request.form
         b_id = bookform['cartid']
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO cart VALUES (%s , %s )" , [email , b_id])
-        cur.connection.commit()
-        #Write some query
+        try:
+            cur.execute("SELECT * FROM cart WHERE cart_email = %s AND b_id = %s " , [email , b_id])
+            print("HERE GOING TO CART")
+            temp = cur.fetchone()
+            print(temp)
+            if temp == None :
+                cur.execute("INSERT INTO cart VALUES (%s , %s )" , [email , b_id])
+                cur.connection.commit()
+                print("INSERTED INTO CART")
+                cur.execute("SELECT * from cart, books  WHERE cart_email = %s AND book_id = b_id ", [email])
+            else:
+                print("Already in cart")
+        except:
+            cur.execute("SELECT * from cart, books  WHERE cart_email = %s AND book_id = b_id ", [email])
+        cur.execute("SELECT * from cart, books  WHERE cart_email = %s AND book_id = b_id ", [email])
         cart = cur.fetchall()
-    return render_template('listOfMyBooks.html' , booksList = cart)
+        print(cart)
+    return render_template('checkout.html' ,cart = cart)
 
 @app.route('/bookDetails', methods=['GET' , 'POST'])
 def owner():
