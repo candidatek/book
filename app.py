@@ -117,6 +117,7 @@ def newuser():
         userDetais = request.form
         name = userDetais['name']
         branch = userDetais['dept']
+        phone = userDetais['phone']
         email = session['email']
         cur = mysql.connection.cursor()
         print("name = %s , branch = %s \n" % (name , branch))
@@ -326,6 +327,7 @@ def sold():
         cur.execute("SELECT * FROM sold , books WHERE seller  = %s AND status = 'sold' AND sold.book_id = books.book_id ",[email])
         booksList = cur.fetchall()
         return render_template('listOfMyBooks.html' , booksList = booksList)
+
 
 @app.route('/profile/requested')
 def reqquested():
