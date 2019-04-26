@@ -385,7 +385,8 @@ def addcart():
         cur.execute("SELECT * from cart, books  WHERE cart_email = %s AND book_id = b_id ", [email])
         cart = cur.fetchall()
         print(cart)
-    return render_template('checkout.html' ,cart = cart)
+        cur.execute("SELECT full_name FROM users WHERE email = %s " , [email] )
+    return render_template('checkout.html' ,cart = cart , naem = name )
 
 @app.route('/bookDetails', methods=['GET' , 'POST'])
 def owner():
